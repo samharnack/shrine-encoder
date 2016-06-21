@@ -78,7 +78,7 @@ class Shrine
 
         def callback_url
           File.join endpoint_url,
-                    record.class.name.underscore,
+                    CGI::escape(record.class.name.underscore),
                     record.id.to_s,
                     name.to_s,
                     'callback'

@@ -1,16 +1,20 @@
 require 'shrine'
-require "down"
+require 'down'
 
 class Shrine
   module Plugins
     module Encoder
-      def self.load_dependencies uploader, *_opt
-        uploader.plugin :backgrounding
-        uploader.plugin :webhook
-      end
 
-      def self.configure uploader, opts = {}
-        uploader::Attacher.promote { |data| start_encoding data }
+      class << self
+        def load_dependencies uploader, *_opt
+          uploader.plugin :backgrounding
+          uploader.plugin :webhook
+        end
+
+        def configure uploader, opts = {}
+          uploader::Attacher.promote { |data| _start_encoding data }
+          uploader.plugin opts[:encoder] if opts.key? :encoder
+        end
       end
 
       module InstanceMethods
@@ -21,50 +25,21 @@ class Shrine
           end
         end
 
-        private
-
-        def _versions payload
-          Hash[*_outputs(payload).flatten].symbolize_keys
-        end
-
-        # TODO: This is Zencoder Specific
-        def _outputs payload
-          [].tap do |out|
-            payload['outputs'].each do |output|
-              label, url = [output['label'], output['url']]
-
-              out << [label, get_file(url)]
-
-              output.fetch('thumbnails', []).each do |thumbnail|
-                thumbnail.fetch('images', []).each_with_index do |image, index|
-                  thumb_label, thumb_url = [thumbnail['label'], image['url']]
-
-                  out << ["#{thumb_label}_#{index}", get_file(thumb_url)]
-                end
-              end
-            end
-          end
+        def versions data
         end
 
         private
 
-        def get_file url
-          Down.download url
-        rescue Down::NotFound => error
-          puts error.cause
-          raise
+        def _versions data
+          versions(data) || {}
         end
       end
 
       module AttacherMethods
-
-        # TODO: This is Zencoder Specific
         def start_encoding data
-          return if encodings.blank?
+        end
 
-          Zencoder::Job.create input: url,
-                               outputs: encodings,
-                               notifications: [{ url: callback_url }]
+        def webhook_callback request
         end
 
         def encodings
@@ -72,13 +47,17 @@ class Shrine
 
         private
 
+        def _start_encoding data
+          start_encoding data unless _encodings.blank?
+        end
+
         def _encodings
           encodings || []
         end
 
         def callback_url
           File.join endpoint_url,
-                    record.class.name.underscore,
+                    CGI.escape(record.class.name.underscore),
                     record.id.to_s,
                     name.to_s,
                     'callback'

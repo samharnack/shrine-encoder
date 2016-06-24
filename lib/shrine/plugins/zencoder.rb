@@ -18,9 +18,9 @@ class Shrine
       module AttacherMethods
         def start_encoding data
           ::Zencoder::Job.create input: url,
-                               test: !Rails.env.production?
-                               outputs: encodings,
-                               notifications: [{ url: callback_url }]
+                                 test: !Rails.env.production?,
+                                 outputs: encodings,
+                                 notifications: [{ url: callback_url }]
         end
 
         def webhook_callback request

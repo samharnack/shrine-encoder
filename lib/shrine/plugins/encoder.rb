@@ -19,7 +19,7 @@ class Shrine
 
       module InstanceMethods
         def process io, context
-          case context[:phase]
+          case context[:action]
           when :store
             { original: io }.merge _versions(context[:payload])
           end

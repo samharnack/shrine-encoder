@@ -11,16 +11,15 @@ class Shrine
           name = data['name']
           record = type.classify.constantize.find id
           attacher = record.send "#{name}_attacher"
-          attacher.promote attacher.get, phase: :store, payload: payload
+          attacher.promote attacher.get, action: :store, payload: payload
         end
       end
 
       module AttacherMethods
         def start_encoding data
           ::Zencoder::Job.create input: url,
-                               test: !Rails.env.production?
-                               outputs: encodings,
-                               notifications: [{ url: callback_url }]
+                                 outputs: encodings,
+                                 notifications: [{ url: callback_url }]
         end
 
         def webhook_callback request

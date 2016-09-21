@@ -17,7 +17,7 @@ class Shrine
 
       module AttacherMethods
         def start_encoding data
-          ::Zencoder::Job.create input: url,
+          ::Zencoder::Job.create input: url(:original),
                                  test: !Rails.env.production?,
                                  outputs: encodings,
                                  notifications: [{ url: callback_url }]

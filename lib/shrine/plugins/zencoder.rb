@@ -11,7 +11,9 @@ class Shrine
           name = data['name']
           record = type.classify.constantize.find id
           attacher = record.send "#{name}_attacher"
-          attacher.promote attacher.get, action: :store, payload: payload
+          unless attacher.stored?
+            attacher.promote attacher.get, action: :store, payload: payload
+          end
         end
       end
 

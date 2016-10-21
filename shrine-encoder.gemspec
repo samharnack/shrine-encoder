@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "shrine", "~> 2.2.0"
+  spec.add_dependency "shrine", "~> 2.0"
   spec.add_dependency "shrine-webhook", "~> 0.1"
   spec.add_dependency "down", ">= 1.0.5"
 

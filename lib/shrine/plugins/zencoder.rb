@@ -10,15 +10,13 @@ class Shrine
           type, id = data['record']
           name = data['name']
           record = type.classify.constantize.find id
-          attacher = record.send "#{name}_attacher"
-          unless attacher.stored?
-            attacher.promote attacher.get, action: :store, payload: payload
-          end
+          attacher = record.public_send "#{name}_attacher"
+          attacher.promote attacher.get, action: :store, payload: payload unless attacher.stored?
         end
       end
 
       module AttacherMethods
-        def start_encoding data
+        def start_encoding
           ::Zencoder::Job.create input: url(:original),
                                  test: !Rails.env.production?,
                                  outputs: encodings,

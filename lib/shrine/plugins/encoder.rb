@@ -4,7 +4,6 @@ require 'down'
 class Shrine
   module Plugins
     module Encoder
-
       class << self
         def load_dependencies uploader, *_opt
           uploader.plugin :backgrounding
@@ -12,8 +11,8 @@ class Shrine
         end
 
         def configure uploader, opts = {}
-          uploader::Attacher.promote { |data| _start_encoding data }
           uploader.plugin opts[:encoder] if opts.key? :encoder
+          uploader.opts[:encoder_store] = opts.fetch :store, uploader.opts.fetch(:store, false)
         end
       end
 
@@ -21,39 +20,27 @@ class Shrine
         def process io, context
           case context[:action]
           when :store
-            { original: io }.merge _versions(context[:payload])
+            { original: io }.merge versions(context[:payload])
           end
         end
 
-        def versions data
-        end
-
-        private
-
-        def _versions data
-          versions(data) || {}
+        def versions _data
+          {}
         end
       end
 
       module AttacherMethods
-        def start_encoding data
+        def start_encoding
         end
 
         def webhook_callback request
         end
 
         def encodings
+          []
         end
 
         private
-
-        def _start_encoding data
-          start_encoding data unless _encodings.blank?
-        end
-
-        def _encodings
-          encodings || []
-        end
 
         def callback_url
           File.join endpoint_url,

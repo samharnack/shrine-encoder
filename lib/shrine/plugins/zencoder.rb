@@ -16,11 +16,16 @@ class Shrine
       end
 
       module AttacherMethods
+
+        def encoding_defaults
+          { test: !Rails.env.production? }
+        end
+
         def start_encoding
-          ::Zencoder::Job.create input: url(:original),
-                                 test: !Rails.env.production?,
-                                 outputs: encodings,
-                                 notifications: [{ url: callback_url }]
+          params = encoding_defaults.merge input: url(:original),
+                                           outputs: encodings,
+                                           notifications: [{ url: callback_url }]
+          ::Zencoder::Job.create params
         end
 
         def webhook_callback request
